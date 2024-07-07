@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:http/http.dart' as http;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -10,9 +13,47 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final String API_URL = 'http://127.0.0.1:5001/todos';
+
   List todo_list = [];
 
   final task = TextEditingController();
+  Future<List> fetchTodoList() async {
+    final response = await http.get(Uri.parse(API_URL));
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load todo list');
+    }
+  }
+
+  Future<void> CreateTodo() async {
+    final response = await http
+        .post(
+      Uri.parse(API_URL),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({'title': task.text}),
+    )
+        .then((value) {
+      fetchTodoList().then((value) {
+        print(value);
+        setState(() {
+          todo_list = value;
+        });
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTodoList().then((value) {
+      print(value);
+      setState(() {
+        todo_list = value;
+      });
+    });
+  }
 
   void addtodo() {
     setState(() {
@@ -53,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: 20,
                     ),
                     ElevatedButton(
-                      onPressed: addtodo,
+                      onPressed: CreateTodo,
                       child: Text("Add"),
                     ),
                     const SizedBox(
@@ -69,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ListView.builder(
                   itemBuilder: (context, index) {
                     return ListTile(
-                      title: Text(todo_list[index]),
+                      title: Text(todo_list[index]['title']),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete),
                         onPressed: () => deletetodo(index),
