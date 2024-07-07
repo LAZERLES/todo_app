@@ -12,21 +12,20 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List todo_list = [];
 
-  String task = "";
+  final task = TextEditingController();
 
   void addtodo() {
     setState(() {
-      todo_list.add(task);
-      task = "";
+      todo_list.add(task.value.text);
+      task.clear();
     });
   }
 
   void edittodo() {}
 
-  void deletetodo() {
+  void deletetodo(index) {
     setState(() {
-      todo_list.remove(task);
-      task = "";
+      todo_list.removeAt(index);
     });
   }
 
@@ -45,14 +44,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   children: [
                     TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: "To Do",
-                      ),
-                      keyboardType: TextInputType.text,
-                      onChanged: (value) {
-                        task = value;
-                      },
-                    ),
+                        decoration: const InputDecoration(
+                          labelText: "To Do",
+                        ),
+                        keyboardType: TextInputType.text,
+                        controller: task),
                     const SizedBox(
                       height: 20,
                     ),
@@ -76,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: Text(todo_list[index]),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete),
-                        onPressed: deletetodo,
+                        onPressed: () => deletetodo(index),
                       ),
                     );
                   },
